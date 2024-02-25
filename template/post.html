@@ -5,14 +5,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ .FrontMatter.Title }}</title>
+    <title>{{ .FrontMatters.Title }}</title>
 </head>
 
 <body>
     <div>
-        <h1>Title: {{ .frontMatters.Title }}</h1>
-        <p>Date: {{ .frontMatters.Date }}</p>
-        <p>Author: {{ .frontMatters.Author }}</p>
+        <h1>Title: {{ .FrontMatters.Title }}</h1>
+        <p>Date: {{ .FrontMatters.Date }}</p>
+        <p>Author: {{ .FrontMatters.Author }}</p>
     </div>
     {{.Body}}
 </body>

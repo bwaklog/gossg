@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"html/template"
 	"log"
 	"os"
@@ -25,8 +24,8 @@ type FrontMatters struct {
 
 type Post struct {
 	fileName     string
-	frontMatters FrontMatters
-	Body         string
+	FrontMatters FrontMatters
+	Body         template.HTML
 }
 
 // get posts from ./posts
@@ -54,8 +53,8 @@ func getMdPosts() ([]Post, error) {
 
 		posts = append(posts, Post{
 			fileName:     file.Name(),
-			frontMatters: postFrontMatter,
-			Body:         parsedMarkdownContent.String(),
+			FrontMatters: postFrontMatter,
+			Body:         template.HTML(parsedMarkdownContent.String()),
 		})
 	}
 
@@ -64,16 +63,14 @@ func getMdPosts() ([]Post, error) {
 	}
 
 	// list files in ./post
-	for _, post := range posts {
-		fmt.Printf("post: %q\n", post)
-	}
+	// for _, post := range posts {
+	// 	fmt.Printf("post: %q\n", post)
+	// }
 
 	return posts, nil
 }
 
 func generateHTML(posts []Post) {
-
-
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 		if err := os.Mkdir(outputDir, 0755); err != nil {
 			log.Fatal(err)
@@ -87,24 +84,22 @@ func generateHTML(posts []Post) {
 			log.Fatal(err)
 		}
 
-        var buffer bytes.Buffer
-        err = postTemplate.ExecuteTemplate(&buffer, "post.html", post)
-        if err != nil {
-            log.Fatal(err)
-        }
+		var buffer bytes.Buffer
+		err = postTemplate.ExecuteTemplate(&buffer, "post", post)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-        outputFile := strings.Join([]string{outputDir, strings.TrimSuffix(post.fileName, ".md") + ".html"}, "/")
+		outputFile := strings.Join([]string{outputDir, strings.TrimSuffix(post.fileName, ".md") + ".html"}, "/")
 
-
-        if err := os.WriteFile(outputFile, buffer.Bytes(), 0644); err != nil {
-            log.Fatal(err)
-        }
+		if err := os.WriteFile(outputFile, buffer.Bytes(), 0644); err != nil {
+			log.Fatal(err)
+		}
 
 	}
 }
 
 func parseFrontMatter(fileContentString []byte) FrontMatters {
-
 	frontmatter := &FrontMatters{}
 
 	if err := yaml.Unmarshal(fileContentString, frontmatter); err != nil {
