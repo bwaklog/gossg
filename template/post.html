@@ -1,0 +1,21 @@
+{{ define "post" }}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .FrontMatter.Title }}</title>
+</head>
+
+<body>
+    <div>
+        <h1>Title: {{ .frontMatters.Title }}</h1>
+        <p>Date: {{ .frontMatters.Date }}</p>
+        <p>Author: {{ .frontMatters.Author }}</p>
+    </div>
+    {{.Body}}
+</body>
+
+</html>
+{{ end }}
