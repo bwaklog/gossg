@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	// "copydir"
 	"fmt"
 	"html/template"
 	"log"
@@ -17,16 +18,16 @@ import (
 	// "gopkg.in/yaml.v2"
 )
 
-type FrontMatters struct {
+type FrontMatter struct {
 	Title  string `yaml:"title"`
 	Author string `yaml:"author"`
 	Date   string `yaml:"date"`
 }
 
 type Post struct {
-	fileName     string
-	frontMatters FrontMatters
-	Body         string
+	fileName    string
+	FrontMatter FrontMatter
+	Body        template.HTML
 }
 
 // get posts from ./posts
@@ -53,9 +54,9 @@ func getMdPosts() ([]Post, error) {
 		parsedMarkdownContent := markdownParser([]byte(fileContentString))
 
 		posts = append(posts, Post{
-			fileName:     file.Name(),
-			frontMatters: postFrontMatter,
-			Body:         parsedMarkdownContent.String(),
+			fileName:    file.Name(),
+			FrontMatter: postFrontMatter,
+			Body:        template.HTML(parsedMarkdownContent.String()),
 		})
 	}
 
@@ -73,7 +74,6 @@ func getMdPosts() ([]Post, error) {
 
 func generateHTML(posts []Post) {
 
-
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 		if err := os.Mkdir(outputDir, 0755); err != nil {
 			log.Fatal(err)
@@ -87,25 +87,26 @@ func generateHTML(posts []Post) {
 			log.Fatal(err)
 		}
 
-        var buffer bytes.Buffer
-        err = postTemplate.ExecuteTemplate(&buffer, "post.html", post)
-        if err != nil {
-            log.Fatal(err)
-        }
+		var buffer bytes.Buffer
+		err = postTemplate.ExecuteTemplate(&buffer, "post", post)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-        outputFile := strings.Join([]string{outputDir, strings.TrimSuffix(post.fileName, ".md") + ".html"}, "/")
+		// fmt.Printf("html : %q\n", buffer.String())
 
+		outputFile := strings.Join([]string{outputDir, strings.TrimSuffix(post.fileName, ".md") + ".html"}, "/")
 
-        if err := os.WriteFile(outputFile, buffer.Bytes(), 0644); err != nil {
-            log.Fatal(err)
-        }
+		if err := os.WriteFile(outputFile, buffer.Bytes(), 0644); err != nil {
+			log.Fatal(err)
+		}
 
 	}
 }
 
-func parseFrontMatter(fileContentString []byte) FrontMatters {
+func parseFrontMatter(fileContentString []byte) FrontMatter {
 
-	frontmatter := &FrontMatters{}
+	frontmatter := &FrontMatter{}
 
 	if err := yaml.Unmarshal(fileContentString, frontmatter); err != nil {
 		log.Fatal(err)
@@ -122,15 +123,7 @@ func markdownParser(markdownContent []byte) bytes.Buffer {
 	return buffer
 }
 
-func serveSite() {}
-
-const (
-	postDir      = "posts"
-	outputDir    = "rendered"
-	templatePath = "./template/"
-)
-
-func main() {
+func serveSite() {
 	posts, err := getMdPosts()
 	if err != nil {
 		log.Fatal(err)
@@ -138,7 +131,23 @@ func main() {
 
 	generateHTML(posts)
 
-	///for _, post := range posts {
-	//	fmt.Printf("post: %q\n", post)
-	//}
+	if _, err := os.Stat("./rendered/static/"); os.IsNotExist(err) {
+		if err := os.Mkdir("./rendered/static", 0755); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// if err := copydir.CopyDir("./rendered/static/", "./static/"); err != nil {
+	// 	log.Fatal(err)
+	// }
+}
+
+const (
+	postDir      = "./posts/"
+	outputDir    = "./rendered/"
+	templatePath = "./template/"
+)
+
+func main() {
+	serveSite()
 }

@@ -8,5 +8,5 @@ date: 25-02-2024
 
 First Post of the site!
 
-[hello](https://i.imgur.com/moBMMaw.jpg)
+![hello](https://i.imgur.com/moBMMaw.jpg)
 
